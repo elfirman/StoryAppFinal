@@ -1,12 +1,8 @@
-import CheckUserAuth from '../pages/auth/check-user-auth'
-import EndpointStory from './endpointStory'
+import Auth from '../../network/auth'
+import CheckUserAuth from './check-user-auth'
 import bootstrap from 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
-const AddStory = {
-  createRenderRoot() {
-    return this
-  },
-
+const Register = {
   async init() {
     CheckUserAuth.checkLoginState()
 
@@ -14,20 +10,41 @@ const AddStory = {
   },
 
   _initialListener() {
-    const createStory = document.querySelector('#createStory')
-    createStory.addEventListener(
+    const registerForm = document.querySelector('#registerForm')
+    registerForm.addEventListener(
       'submit',
       async (event) => {
         event.preventDefault()
         event.stopPropagation()
 
-        await this._createNewStory()
+        registerForm.classList.add('was-validated')
+        await this._getRegistered()
       },
       false
     )
+
+    const togglePasswordButton = document.getElementById('togglePasswordButton')
+    togglePasswordButton.addEventListener('click', () => {
+      this._togglePassword()
+    })
   },
 
-  async _createNewStory() {
+  _togglePassword() {
+    const passwordInput = document.getElementById('validationCustomPassword')
+    const eyeIcon = document.getElementById('eyeIcon')
+
+    if (passwordInput.type === 'password') {
+      passwordInput.type = 'text'
+      eyeIcon.classList.remove('bi-eye')
+      eyeIcon.classList.add('bi-eye-slash')
+    } else {
+      passwordInput.type = 'password'
+      eyeIcon.classList.remove('bi-eye-slash')
+      eyeIcon.classList.add('bi-eye')
+    }
+  },
+
+  async _getRegistered() {
     const submitButton = document.getElementById('submitButton')
     const loadingButton = document.getElementById('loadingButton')
     const formData = this._getFormData()
@@ -37,9 +54,10 @@ const AddStory = {
         submitButton.classList.add('d-none')
         loadingButton.classList.remove('d-none')
 
-        const response = await EndpointStory.createNewStory({
-          photo: formData.photo,
-          description: formData.description
+        const response = await Auth.register({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password
         })
 
         const successToast = new bootstrap.Toast(document.getElementById('successToast'))
@@ -48,7 +66,7 @@ const AddStory = {
         const successToastBody = document.querySelector('#successToast .toast-body')
         successToastBody.textContent = response.data.message
 
-        this._goToDashboardPage()
+        this._goToLoginPage()
       } catch (error) {
         submitButton.classList.remove('d-none')
         loadingButton.classList.add('d-none')
@@ -62,14 +80,14 @@ const AddStory = {
   },
 
   _getFormData() {
-    const photo = document.querySelector('#validationFile')
-    const description = document.querySelector('#validationTextArea')
-
-    const photoFile = photo.files[0]
+    const name = document.querySelector('#validationCustomRecordName')
+    const email = document.querySelector('#validationCustomEmail')
+    const password = document.querySelector('#validationCustomPassword')
 
     return {
-      photo: photoFile,
-      description: description.value
+      name: name.value,
+      email: email.value,
+      password: password.value
     }
   },
 
@@ -79,9 +97,9 @@ const AddStory = {
     return formDataFiltered.length === 0
   },
 
-  _goToDashboardPage() {
-    window.location.href = '/'
+  _goToLoginPage() {
+    window.location.href = '/auth/login.html'
   }
 }
 
-export default AddStory
+export default Register

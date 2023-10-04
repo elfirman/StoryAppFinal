@@ -1,12 +1,10 @@
-import CheckUserAuth from '../pages/auth/check-user-auth'
-import EndpointStory from './endpointStory'
+import Auth from '../../network/auth'
+import Config from '../../config/config'
+import Utils from '../../utils/utils'
+import CheckUserAuth from './check-user-auth'
 import bootstrap from 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
-const AddStory = {
-  createRenderRoot() {
-    return this
-  },
-
+const Login = {
   async init() {
     CheckUserAuth.checkLoginState()
 
@@ -14,20 +12,41 @@ const AddStory = {
   },
 
   _initialListener() {
-    const createStory = document.querySelector('#createStory')
-    createStory.addEventListener(
+    const loginForm = document.querySelector('#loginForm')
+    loginForm.addEventListener(
       'submit',
       async (event) => {
         event.preventDefault()
         event.stopPropagation()
 
-        await this._createNewStory()
+        loginForm.classList.add('was-validated')
+        await this._getLogged()
       },
       false
     )
+
+    const togglePasswordButton = document.getElementById('togglePasswordButton')
+    togglePasswordButton.addEventListener('click', () => {
+      this._togglePassword()
+    })
   },
 
-  async _createNewStory() {
+  _togglePassword() {
+    const passwordInput = document.getElementById('validationCustomPassword')
+    const eyeIcon = document.getElementById('eyeIcon')
+
+    if (passwordInput.type === 'password') {
+      passwordInput.type = 'text'
+      eyeIcon.classList.remove('bi-eye')
+      eyeIcon.classList.add('bi-eye-slash')
+    } else {
+      passwordInput.type = 'password'
+      eyeIcon.classList.remove('bi-eye-slash')
+      eyeIcon.classList.add('bi-eye')
+    }
+  },
+
+  async _getLogged() {
     const submitButton = document.getElementById('submitButton')
     const loadingButton = document.getElementById('loadingButton')
     const formData = this._getFormData()
@@ -37,10 +56,11 @@ const AddStory = {
         submitButton.classList.add('d-none')
         loadingButton.classList.remove('d-none')
 
-        const response = await EndpointStory.createNewStory({
-          photo: formData.photo,
-          description: formData.description
+        const response = await Auth.login({
+          email: formData.email,
+          password: formData.password
         })
+        Utils.setUserToken(Config.USER_TOKEN_KEY, response.data.loginResult.token)
 
         const successToast = new bootstrap.Toast(document.getElementById('successToast'))
         successToast.show()
@@ -62,14 +82,12 @@ const AddStory = {
   },
 
   _getFormData() {
-    const photo = document.querySelector('#validationFile')
-    const description = document.querySelector('#validationTextArea')
-
-    const photoFile = photo.files[0]
+    const email = document.querySelector('#validationCustomRecordEmail')
+    const password = document.querySelector('#validationCustomPassword')
 
     return {
-      photo: photoFile,
-      description: description.value
+      email: email.value,
+      password: password.value
     }
   },
 
@@ -84,4 +102,4 @@ const AddStory = {
   }
 }
 
-export default AddStory
+export default Login

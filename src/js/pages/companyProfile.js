@@ -1,10 +1,15 @@
 import { LitElement, html, css } from 'lit'
 import { msg, updateWhenLocaleChanges } from '@lit/localize'
+import CheckUserAuth from './auth/check-user-auth'
 
 class CompanyProfile extends LitElement {
   constructor() {
     super()
     updateWhenLocaleChanges(this)
+  }
+
+  async init() {
+    CheckUserAuth.checkLoginState()
   }
 
   static styles = css`
@@ -14,6 +19,15 @@ class CompanyProfile extends LitElement {
 
     p {
       font-size: 1.2rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1320px;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 15px;
+      padding-right: 15px;
     }
   `
 

@@ -1,4 +1,7 @@
 import { LitElement, html } from 'lit'
+import Utils from '../utils/utils'
+import Config from '../config/config'
+import CheckUserAuth from '../pages/auth/check-user-auth'
 
 class FeeHeader extends LitElement {
   createRenderRoot() {
@@ -24,17 +27,37 @@ class FeeHeader extends LitElement {
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               <li class="nav-item">
-                <a class="nav-link active text-light" aria-current="page" href="/company/companyProfile.html">Profil Perusahaan</a>
+                <a
+                  class="nav-link active text-light"
+                  aria-current="page"
+                  href="/company/companyProfile.html"
+                  >Profil Perusahaan</a
+                >
               </li>
             </ul>
-            <a class="btn btn-primary text-capitalize" href="/story/addStory.html" role="button">
-              <i class="bi bi-plus-circle me-1"></i>Tambah Story
-            </a>
-            </form>
+            <div>
+              <a class="btn btn-primary text-capitalize" href="/story/addStory.html" role="button">
+                <i class="bi bi-plus-circle me-1"></i>Tambah Story
+              </a>
+              <a
+                class="btn btn-danger text-capitalize"
+                id="userLogOut"
+                role="button"
+                @click=${this._userLogOut}
+              >
+                <i class="bi bi-box-arrow-right me-1"></i>Logout
+              </a>
+            </div>
           </div>
         </div>
       </nav>
     `
+  }
+
+  _userLogOut(event) {
+    event.preventDefault()
+    Utils.destroyUserToken(Config.USER_TOKEN_KEY)
+    CheckUserAuth.checkLoginState()
   }
 }
 customElements.define('fee-header', FeeHeader)
